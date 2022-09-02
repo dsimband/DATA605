@@ -1,0 +1,288 @@
+---
+title: "DATA605_w2_ Matrix Manipulation"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(matlib) 
+```
+
+
+# Problem set 1
+
+<b> (1) Show that $A^{T}A  \ne AA^{T} $ in general. (Proof and demonstration.) </b>
+
+
+
+$A^{T}A$ - Multiply a matrix by its transposed matrix generates the following equation
+
+$$ 
+\begin{bmatrix} a11&a12 \\ a21&a22 \\ \end{bmatrix} \times
+
+\begin{bmatrix} a11&a21 \\ a12&a22 \\ \end{bmatrix} =
+
+\begin{bmatrix} a11*a11+a12*a12 & a11*a21+a12*a22 \\ a21*a11+a22*a12 & a21*a21+a22*a22 \\ \end{bmatrix} 
+$$ 
+
+<b> $AA^{T}$ - Multiply a transposed matrix by the original matrix generates the following equation </b>
+
+
+$$
+\begin{bmatrix} a11&a21 \\ a12&a22 \\ \end{bmatrix} \times
+
+\begin{bmatrix} a11&a12 \\ a21&a22 \\ \end{bmatrix} =
+
+\begin{bmatrix} a11*a11+a21*a21 & a11*a12+a21*a22 \\ a12*a11+a22*a21 & a12*a12+a22*a22 \\ \end{bmatrix}
+$$
+<br><br>
+As you can see the solution to the 2 equations are not equal
+
+
+
+
+
+<b> (2) For a special type of square matrix A, we get AT A = AAT . Under what conditions
+could this be true? (Hint: The Identity matrix I is an example of such a matrix).
+Please typeset your response using LaTeX mode in RStudio. If you do it in paper, please either scan or take a picture of the work and submit it. Please ensure that your image is legible and that your submissions are named using your first initial, last name, assignment and problem set within the assignment. E.g. LFulton_Assignment2_PS1.png </b>
+
+
+$A^{T}A = AA^{T} $ holds for all normal matrices. If a matrix and its transposed matrix are identical then $A^{T}A = AA^{T} $ holds
+
+
+
+```{r}
+A <- matrix(c(2,1,4, 1,2,1, 1,1,2),3)
+A
+
+t(A)
+
+
+A%*%t(A)
+
+
+t(A) %*% A
+```
+
+
+```{r}
+A <- matrix(c(2,1,1, 1,2,1, 1,1,2),3)
+A
+
+t(A)
+
+
+A%*%t(A)
+
+
+t(A) %*% A
+```
+
+
+
+
+# Problem set 2
+
+<b> (1) Matrix factorization is a very important problem. There are supercomputers built just to do matrix factorizations. Every second you are on an airplane, matrices are being factorized. Radars that track flights use a technique called Kalman filtering. At the heart of Kalman Filtering is a Matrix Factorization operation. Kalman Filters are solving linear systems of equations when they track your flight using radars.
+Write an R function to factorize a square matrix A into LU or LDU, whichever you prefer. Please submit your response in an R Markdown document using our class naming convention, E.g. LFulton_Assignment2_PS2.png
+You don’t have to worry about permuting rows of A and you can assume that A is less than 5x5, if you need to hard-code any variables in your code. If you doing the entire assignment in R, then please submit only one markdown document for both the problems. </b>
+
+
+
+```{r}
+
+
+calcEliminationMatrixArray <- function(A) {
+ 
+	size_i <- dim(A)[1]
+	size_j <- dim(A)[2] - 1 
+	
+	U <- diag(size_i)
+	
+	m_lst <- list()
+	m_arry <- array(dim = c(size_i,size_i,size_i))
+	
+	x <- 1
+	
+	for (j in 1:size_j) {
+		for (i in 2:size_i) {
+			if ( i != j) {
+				
+				U <- diag(size_i)
+				x1 = 1
+				while (x1 < x) {
+					U <- U %*% m_arry[,,x1]
+					x1 <- x1 + 1
+				}
+				
+				U <- U %*% A
+				I <- diag(size_i)
+				I[i,j] = -1 * U[i,j] * sign(U[j,j])
+
+				m_arry[,,x] <- I
+				x <- x+1
+			}
+		}
+	}
+	return(m_arry)
+}
+
+
+
+calcU <- function(m_arry,size) {
+	
+	x <- dim(m_arry)[3]
+	U <- diag(size)
+	for (i in x:1) {
+		U <- U %*% m_arry[,,i]
+	}
+	U <- U %*% A
+	return(U)
+}
+
+
+
+calcL <- function(m_arry, size) {
+	
+	x <- dim(m_arry)[3]
+	L <- diag(size)
+	for (i in 1:x) {
+		L <- L %*% solve(m_arry[,,i])
+	}
+	return(L)
+}
+
+
+```
+
+
+
+
+```{r}
+
+#A <- matrix(c(1,2,3,1,1,1,2,0,1),nrow=3)
+A <-matrix(c(3,-3,6, -7,5,-4, -2,1,0),nrow=3)
+size <- dim(A)[1]
+#z <- dim(A)
+
+
+m_arry <- calcEliminationMatrixArray(A)
+U <- calcU(m_arry,size)
+print(U)
+
+L <- calcL(m_arry, size)
+print(L)
+
+print(L%*%U == A)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+sign(-200)
+```
+
+
+
+```{r}
+
+#A <- matrix(c(1,2,3,1,1,1,2,0,1),nrow=3)
+A <-matrix(c(3,-3,6, -7,5,-4, -2,1,0),nrow=3)
+
+size_i <- dim(A)[1]
+#size_i
+size_j <- dim(A)[2] - 1
+#size_j
+
+U <- diag(size_i)
+
+m_lst <- list()
+m_arry <- array(dim = c(size_i,size_i,size_i))
+
+x <- 1
+
+
+for (j in 1:size_j) {
+	for (i in 2:size_i) {
+		if ( i != j) {
+			print(paste(i,'-',j))
+			print(A[i,j])
+			print(paste('x=',x))
+
+			U <- diag(size_i)
+			x1 = 1
+			while (x1 < x) {
+				print(paste('x=',x))
+				print(paste('x1=',x1))
+				U <- U %*% m_arry[,,x1]
+				print(m_arry[,,x1])
+				x1 <- x1 + 1
+			}
+
+			U <- U %*% A
+			print('U')
+			print(U)
+
+			I <- diag(size_i)
+			I[i,j] = -1 * U[i,j] * sign(U[j,j])
+			print('I')
+			print(I)
+
+			m_arry[,,x] <- I
+			#m_lst[x] <- I
+			x <- x+1
+		}
+	}
+}
+
+
+
+```
+
+
+
+
+
+```{r}
+
+# x <- size(m_arry)[3]
+# U <- diag(size_i)
+# for (i in x:1) {
+# 	print(m_arry[,,i])
+# 	U <- U %*% m_arry[,,i]
+# }
+# U <- U %*% A
+# 
+# print(U)
+
+
+```
+
