@@ -1,0 +1,127 @@
+---
+title: "DATA605_w3_ Eigenvalues and Eigenvectors"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+```
+
+
+```{r}
+library(matlib) 
+library(pracma)
+```
+
+
+## Problem set 1
+
+
+<b><i>(1) What is the rank of the matrix A?</i></b>
+
+$A = \begin{bmatrix} 1&2&3&4 \\ -1&0&1&3 \\ 0&1&-2&1 \\5&4&-2&-3 \end{bmatrix}$
+
+```{r}
+A = matrix(c(1,-1,0,5, 2,0,1,4, 3,1,-2,-2, 4,3,1,-3),4)
+A
+
+print('- RREF')
+rref(A)
+
+print('- matrix rank')
+Rank(A)
+```
+
+|		The rank of matrix A is = 4
+
+
+<br><br><br>
+<b><i>(2) Given an mxn matrix where m > n, what can be the maximum rank? The minimum rank, assuming that the matrix is non-zero?</i></b>
+
+|		The maximum rank of the matrix is n and the minimum rank is 1 
+
+
+<br><br><br>
+<b><i>(3) What is the rank of matrix B?</i></b>
+
+$B = \begin{bmatrix} 1&2&1 \\ 3&6&3 \\ 2&4&2 \end{bmatrix}$
+
+
+```{r}
+B = matrix(c(1,3,2, 2,6,4, 1,3,2),3)
+B
+
+#- RREF
+rref(B)
+
+#- matrix rank
+Rank(B)
+
+
+```
+
+|		The rank of matrix A is = 1
+
+<br><br><br>
+<b><i>(4)Compute the eigenvalues and eigenvectors of the matrix A. You’ll need to show your
+work. You’ll need to write out the characteristic polynomial and show your solution.</i></b>
+
+$A = \begin{bmatrix} 1&2&3 \\ 0&4&5 \\ 0&0&6 \end{bmatrix}$
+
+```{r}
+A <- matrix(c(1,0,0, 2,4,0, 3,5,6), 3)
+A
+
+#eigen values / vectors'
+e <- eigen(A)
+print(e$values)
+
+```
+
+
+```{r}
+#lamda 6
+A1 <- 6*diag(3) - A
+A1
+rref(A1)
+
+
+```
+
+
+
+
+
+```{r}
+#lamda 4
+A2 <- 4*diag(3) - A
+A2
+rref(A2)
+
+
+```
+
+
+
+
+```{r}
+#lamda 1
+A3 <- 1*diag(3) - A
+A3
+rref(A3)
+```
+
+
+
+
+
+<br><br>
+<b><i>Please show your work using an R-markdown document. Please name your assignment submission with your first initial and last name.</i></b>
+
