@@ -1,0 +1,312 @@
+---
+title: "Discussion - Week12"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+```
+
+```{r echo=FALSE, include=FALSE}
+library(matlib) 
+library(pracma)
+library(readr)
+
+library(explore)
+library(graphics)
+library(ggplot2)
+
+library(ResourceSelection)
+library(glmnet)
+
+library(MASS)
+library(tidyverse)
+library(caret)
+library(leaps)
+library(regclass)
+
+library(dplyr)
+
+```
+
+
+# Week 12 - Assignment
+Using R, build a multiple regression model for data that interests you.  Include in this model at least one quadratic term, one dichotomous term, and one dichotomous vs. quantitative interaction term.  Interpret all coefficients. Conduct residual analysis.  Was the linear model appropriate? Why or why not?
+
+
+Notes:
+- one quadratic term
+- one dichotomous term
+- and one dichotomous vs. quantitative interaction term
+
+
+Questions:
+- Interpret all coefficients. 
+- Conduct residual analysis
+- Was the linear model appropriate?
+
+
+
+
+# Medical insurance costs
+
+This dataset was inspired by the book Machine Learning with R by Brett Lantz. The data contains medical information and costs billed by health insurance companies. It contains 1338 rows of data and the following columns: age, gender, BMI, children, smoker, region and insurance charges.
+
+Columns
+
+- age: age of primary beneficiary
+- sex: insurance contractor gender, female, male
+- bmi: Body mass index, providing an understanding of body, weights that are relatively high or low relative to height, objective index of body weight (kg / m ^ 2) using the ratio of height to weight, ideally 18.5 to 24.9
+- children: Number of children covered by health insurance / Number of dependents
+- smoker: Smoking
+- region: the beneficiary's residential area in the US, northeast, southeast, southwest, northwest.
+- charges: Individual medical costs billed by health insurance
+
+
+<b><i>
+
+- H0 - The medical information captured in the insurance dataset does not predict the level of charges for individuals. age, sex, bmi, children, smoker, and region are not predictors of medical charges.
+- H1 - The medical information captured in the insurance dataset does predict the level of charges for individuals. age, sex, bmi, children, smoker, and region are predictors of medical charges.
+
+</b></i>
+
+
+
+```{r}
+
+destfile <- tempfile()
+download.file("https://gist.githubusercontent.com/meperezcuello/82a9f1c1c473d6585e750ad2e3c05a41/raw/d42d226d0dd64e7f5395a0eec1b9190a10edbc03/Medical_Cost.csv", destfile)
+df <-  read_csv(destfile, col_types = list('region' = col_factor(), 'children' = col_factor()))
+
+```
+
+
+
+```{r}
+df %>% explain_tree(target = charges)
+df %>% dplyr::select(age,bmi,children,charges) %>% pairs(panel = panel.smooth, gap=0.5)
+summary(df)
+```
+
+<b><i>
+
+- The explain tree identifies smoking and age seem to bprimary predictors of medical charges
+- The pairs graph shows unclear relationships between medical charges and number of children.
+
+</b></i>
+
+
+```{r}
+
+ggplot(df, aes(x=age, y=charges, color=smoker)) + geom_point()
+ggplot(df, aes(x=bmi, y=charges, color=sex)) + geom_point()
+ggplot(df, aes(x=children, y=charges, color=region)) + geom_point()
+
+```
+
+
+<b><i>
+
+- The graph of age vs medical charges colored by the smoking cateogry shows an interesting relationship between these three variables
+- It appears that individual fall into 3 broad categories when compairing medical charges to age. The lowest band is for no smokers the highest band is for smokers and then there is a middle band that includes a mix. 
+
+</b></i>
+
+
+```{r}
+
+df_lm.full <- lm(data = df, charges ~ .)
+summary(df_lm.full)
+
+```
+
+<b><i>
+
+The linear regression model has p-value of less 0.05 so we reject the Null hypothesis in favor of the alternate hypothesis. The full model with an adjusted R squared of 0.7497 shows strong explanatory power.  Surprisingly sex does not appear to be a significant predictor of medical costs. 
+
+</b></i>
+
+
+
+```{r}
+
+par(mfrow=c(2,2))
+plot(df_lm.full)
+
+
+```
+
+
+```{r}
+
+hist(df_lm.full$residuals, main = "Histogram of Residuals", xlab= "", col= "lightblue")
+
+```
+<b><i>
+	
+- Normal Q-Q - we see a deviation from the guide indicating that the residuals do not follow a normal distribution
+- Residual Historgram - the residual histogram is close to normally distributed but skews right slightly
+
+</b></i>
+
+
+
+
+```{r}
+
+df$bmi2 <- sqrt(df$bmi)
+df$age2 <- df$age^2
+
+df_lm.1 <- lm(data = df, charges ~ age2 + bmi2 + smoker )
+summary.lm(df_lm.1,correlation=TRUE)
+
+```
+
+
+The simplified linear regression model has p-value of less 0.05 so we reject the Null hypothesis in favor of the alternate hypothesis. The adjusted R squared of 0.7473 is slightly less than the full model but still shows strong explanatory power. This is a much simpler model than the full model focusing on age, the sqrt of bmi and the bivarite smoker indicator.
+
+- intercept = -1.692e+04
+- age coefficient = 3.256e+00
+- bmi coefficient = 3.568e+03
+- smoker indicator = 2.384e+04
+
+
+
+```{r}
+
+par(mfrow=c(2,2))
+plot(df_lm.1)
+
+```
+
+
+
+```{r}
+
+hist(df_lm.1$residuals, main = "Histogram of Residuals", xlab= "", col= "lightblue")
+
+```
+
+<b><i>
+	
+- Normal Q-Q - we see a deviation from the guide indicating that the residuals do not follow a normal distribution
+- Residual Historgram - the residual histogram is close to normally distributed but skews right slightly
+
+</b></i>
+
+
+```{r}
+
+
+
+VIF(df_lm.1)
+
+```
+
+All variables have a Variance Inflation Factor of close to 1 indicating low correlation between the given predictors. 
+
+
+
+# Conclusion
+The second model has a very similar adjusted r-squared to the full model but includes fewer variables. The model includes 3 significant predictors age, bmi and smoking indicator. 
+
+
+
+# Other analysis
+
+
+## stepwise regression
+
+```{r}
+
+
+full.model <- lm(charges ~., data = df)
+step.model <- stepAIC(full.model, direction = "both", 
+                      trace = FALSE)
+summary(step.model)
+
+
+
+```
+
+
+## Ridge Regression
+
+```{r}
+
+#define response variable
+y <- df$charges
+
+#define matrix of predictor variables
+x <- data.matrix(df[, c('age', 'sex', 'bmi','smoker')])
+
+#fit ridge regression model
+model <- glmnet(x, y, alpha = 0)
+
+#view summary of model
+summary(model)
+
+
+#perform k-fold cross-validation to find optimal lambda value
+cv_model <- cv.glmnet(x, y, alpha = 0)
+
+#find optimal lambda value that minimizes test MSE
+best_lambda <- cv_model$lambda.min
+best_lambda
+
+#produce plot of test MSE by lambda value
+plot(cv_model) 
+
+
+#find coefficients of best model
+best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda)
+coef(best_model)
+
+```
+
+
+
+
+
+
+## Other Analysis
+
+
+```{r}
+
+unique(df$region)
+
+df0 <- df %>% dplyr::select(age, bmi, charges) 
+df_r1 <- df %>% filter(df$region == 'southwest') %>% dplyr::select(age, bmi, charges) 
+df_r2 <- df %>% filter(df$region == 'southeast') %>% dplyr::select(age, bmi, charges) 
+df_r3 <- df %>% filter(df$region == 'northwest') %>% dplyr::select(age, bmi, charges) 
+df_r4 <- df %>% filter(df$region == 'northeast') %>% dplyr::select(age, bmi, charges) 
+
+kdepairs(df0)
+kdepairs(df_r1)
+kdepairs(df_r2)
+kdepairs(df_r3)
+kdepairs(df_r4)
+
+```
+
+
+```{r}
+
+df_s1 <- df %>% filter(df$smoker == 'no') %>% dplyr::select(age, bmi, charges) 
+df_s2 <- df %>% filter(df$smoker == 'yes') %>% dplyr::select(age, bmi, charges) 
+
+kdepairs(df0)
+kdepairs(df_s1)
+kdepairs(df_s2)
+
+```
+
+

@@ -1,0 +1,140 @@
+---
+title: "DATA605_w7_Distributions and Densities / Expected Value and Variance"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+rm(list=ls())
+
+```
+
+
+```{r, include=FALSE}
+
+library(matlib) 
+library(pracma)
+library(stats)
+library(scales)
+
+```
+
+
+1. Let X1, X2, . . . , Xn be n mutually independent random variables, each of which is uniformly distributed on the integers from 1 to k. Let Y denote the minimum of the Xi’s. Find the distribution of Y .
+
+- 1 to k
+- y min value of Xi
+
+<br><br>
+<b>
+probability = $prob = \frac{1}{k}$
+
+distribution function = $df = \frac{\left\lvert {k} \right\rvert - a + 1}{n}$
+</b>
+
+<br><br>
+2. Your organization owns a copier (future lawyers, etc.) or MRI (future doctors). This machine has a manufacturer’s expected lifetime of 10 years. This means that we expect one failure every ten years. (Include the probability statements and R Code for each part.).
+
+- life = 10 years
+- mean failure = 10 years
+- 10 years between events
+
+
+a. What is the probability that the machine will fail after 8 years?. Provide also the expected value and standard deviation. Model as a geometric. (Hint: the probability is equivalent to not failing during the first 8 years..)
+
+- prob machine will fail in 8 years
+
+```{r}
+
+p <- 1/10
+n <- 8
+e <- 1/p
+std <- sqrt((1-p)/p^2)
+
+x_lst <- c(0,1,2,3,4,5,6,7,8)
+prob <- (1-p)^(x_lst) * (p)
+prob <- 1 - sum(prob)
+
+print(paste0('2.d) probability = ', round(prob,4)))
+print(pgeom(n,p, lower.tail = FALSE))
+print(paste0('2.d) expected = ', round(e,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+
+```
+
+
+
+
+b. What is the probability that the machine will fail after 8 years?. Provide also the expected value and standard deviation. Model as an exponential.
+
+
+```{r}
+
+mu <- 10
+l <- 1/10
+k <- 8
+
+prob <- exp(-k/mu)
+std <- mu
+
+print(paste0('2.d) probability = ', round(prob,4)))
+print(pexp(k, l, lower.tail = FALSE))
+print(paste0('2.d) mean / expected = ', round(mu,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+
+```
+
+
+c. What is the probability that the machine will fail after 8 years?. Provide also the expected value and standard deviation. Model as a binomial. (Hint: 0 success in 8 years)
+
+
+```{r}
+p <- 1/10
+n <- 8
+x <- 0
+e <- n*p
+std <- sqrt(n*p*(1-p))
+
+prob <- p^x * (1-p)^(n-x)
+print(paste0('2.d) probability = ', round(prob,4)))
+print(dbinom(0,8,0.1))
+
+print(paste0('2.d) expected = ', round(e,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+
+```
+
+
+
+
+d. What is the probability that the machine will fail after 8 years?. Provide also the expected value and standard deviation. Model as a Poisson.
+
+
+```{r}
+r <- 1/10
+t <- 8
+l <- r*t
+e <- l
+x <- 0
+std <- sqrt(l)
+
+prob <- ((l^x) * exp(-l)) / factorial(x)
+
+print(paste0('2.d) probability = ', round(prob,4)))
+print(ppois(x, l))
+print(paste0('2.d) expected = ', round(e,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+```
+
+
+
+<br><br>
+<b><i>Please show your work using an R-markdown document. Please name your assignment submission with your first initial and last name.</i></b>
+

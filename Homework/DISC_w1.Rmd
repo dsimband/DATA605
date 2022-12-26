@@ -1,0 +1,33 @@
+---
+title: "Discussion - Week1"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(matlib) 
+```
+
+
+# Week 1 - Discussion
+Pick one of the exercises in the readings this week.  Solve the exercise as best as you can.  If you have issues, explicate them, so that all of us can help.
+
+```{r}
+A <- matrix(c(3,1,4, 2,-1,2), nrow=3, ncol=2)
+b <- c(1,2,2)
+
+showEqn(A, b)
+Solve(A,b, verbose=TRUE)
+```
+
+
+

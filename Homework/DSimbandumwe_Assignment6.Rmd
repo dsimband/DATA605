@@ -1,0 +1,317 @@
+---
+title: "DATA605_w6_Combinatorics & Conditional Probability"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+rm(list=ls())
+
+```
+
+
+```{r, include=FALSE}
+
+library(matlib) 
+library(pracma)
+library(stats)
+library(scales)
+
+```
+
+
+
+
+1. A bag contains 5 green and 7 red jellybeans. How many ways can 5 jellybeans be withdrawn from the bag so that the number of green ones withdrawn will be less than 2?
+Answer: _______________
+
+```{r}
+# There are 5 spots to fill (5 green / 7 red). Assuming that the only distinguising characteristic for a jellybean is the color and the order it was selected
+
+#1 - calculate the probability for each position
+s1 <- c(2,2,1,1,1)
+c1 <- prod(s1)
+
+print(paste0('1) combinations = ', c1))
+```
+
+
+
+2. A certain congressional committee consists of 14 senators and 13 representatives. How many ways can a subcommittee of 5 be formed if at least 4 of the members must be representatives?
+Answer: _______________
+
+Notes
+- committee 14 senators and 13 representatives.
+- sub committee of 5 with at least 4 rep
+
+
+```{r}
+# committee with 4 representatives.
+c_r4 <- choose(13,4) * choose(14,1)
+
+# committee with 5 representatives.
+c_r5 <- choose(13,5)
+
+num <- c_r4 + c_r5
+
+print(paste0('2) combinations = ', num))
+
+```
+
+
+
+3. If a coin is tossed 5 times, and then a standard six-sided die is rolled 2 times, and finally a group of three cards are drawn from a standard deck of 52 cards without replacement, how many different outcomes are possible?
+ Answer: _______________
+
+```{r}
+
+coin <- 2^5
+dice <- 6^2
+card <- choose(52,3)
+
+outcomes <- coin + dice + card
+print(paste0('3) outcomes = ', outcomes))
+
+```
+
+
+
+4. 3 cards are drawn from a standard deck without replacement. What is the probability that at least one of the cards drawn is a 3? Express your answer as a fraction or a decimal number rounded to four decimal places.
+Answer: _______________
+
+
+```{r}
+
+#52/3
+n <- 52
+k <- 3
+num <- factorial(n) / (factorial(k) * factorial(n-k))
+
+# there are 4 threes in a stqndard deck
+print(paste0('4) probablity = ', (round(4/num,5))))
+
+```
+
+
+```{r}
+
+# number of ways to draw 3 cards from a deck
+options <- choose(52,3)
+
+# draw 1 3 card
+d1 <- choose(4,1) * choose(48,2)
+
+# draw 2 3 cards
+d2 <- choose(4,2) * choose(48,1)
+
+# draw 3 3 cards
+d3 <- choose(4,3)
+
+success <- d1 + d2 + d3
+
+# there are 4 threes in a stqndard deck
+print(paste0('4) probablity = ', (round(success/options,4))))
+
+```
+
+
+
+
+5. Lorenzo is picking out some movies to rent, and he is primarily interested in documentaries and mysteries. He has narrowed down his selections to 17 documentaries and 14 mysteries.
+
+Step 1. How many different combinations of 5 movies can he rent? 
+Answer: _______________
+
+
+```{r}
+
+num <- choose(31,5)
+print(paste0('5.1) number of combinations = ', num))
+
+```
+
+
+
+Step 2. How many different combinations of 5 movies can he rent if he wants at least one mystery?
+Answer: _______________
+
+```{r}
+
+# 1 mystery
+m1 <- choose(14,1) * choose(17,4)
+
+# 2 mystery
+m2 <- choose(14,2) * choose(17,3)
+
+# 3 mystery
+m3 <- choose(14,3) * choose(17,2)
+
+# 4 mystery
+m4 <- choose(14,4) * choose(17,1)
+
+# 5 mystery
+m5 <- choose(14,5)
+
+# probability of movies with 1 documentary
+num <- m1 + m2 + m3 + m4 + m5
+print(paste0('5.2) number of combinations = ', num))
+
+
+```
+
+
+
+6. In choosing what music to play at a charity fund raising event, Cory needs to have an equal number of symphonies from Brahms, Haydn, and Mendelssohn. If he is setting up a schedule of the 9 symphonies to be played, and he has 4 Brahms, 104 Haydn, and 17 Mendelssohn symphonies from which to choose, how many different schedules are possible? Express your answer in scientific notation rounding to the hundredths place.
+Answer: ____________________
+
+Notes
+- 4 Brahms 104 Haydn 17 Mendelssohn
+- schedule 9 symphonies
+- 3 Brahms = 3 Haydn =  3 Mendelssohn
+
+
+```{r}
+
+# equal number of 9 symphonies is 3 Brahms = 3 Haydn =  3 Mendelssohn
+# 
+
+b <- choose(4,3)
+
+h <- choose(104,3)
+
+m <- choose(17,3)
+
+num <- b * h * m
+
+print(paste0('6) number of combinations = ', scientific(num,3)))
+
+```
+
+
+
+7. An English teacher needs to pick 13 books to put on his reading list for the next school year, and he needs to plan the order in which they should be read. He has narrowed down his choices to 6 novels, 6 plays, 7 poetry books, and 5 nonfiction books.
+
+Notes
+- 13 books from 6 novels, 6 plays and 7 poetry books  5 nonfiction books
+
+Step 1. If he wants to include no more than 4 nonfiction books, how many different reading schedules are possible? Express your answer in scientific notation rounding to the hundredths place.
+Answer: ____________________
+
+- 4 <= nonfiction books
+
+```{r}
+books <- 6+6+7+5
+o_books <- 6+6+7
+
+# 0 non fiction
+c0 <- choose(19,13)
+
+# 1 non fiction
+c1 <- choose(5,1) * choose(19,12)
+
+# 2 non fiction
+c2 <- choose(5,2) * choose(19,11)
+
+# 3 non fiction
+c3 <- choose(5,3) * choose(19,10)
+
+# 4 non fiction
+c4 <- choose(5,4) * choose(19,9)
+
+
+num <- c0 + c1 + c2 + c3 + c4
+print(paste0('7.1) number of combinations = ', scientific(num,5)))
+
+```
+
+
+
+Step 2. If he wants to include all 6 plays, how many different reading schedules are possible? Express your answer in scientific notation rounding to the hundredths place.
+Answer: ____________________
+
+```{r}
+
+o_books <- 6+7+5
+
+
+# 6 plays
+p <- choose(6,6)
+
+# other books
+o <- choose(18,7)
+
+num <- p*o
+print(paste0('7.1) number of combinations = ', scientific(num,5)))
+
+
+```
+
+
+8. Zane is planting trees along his driveway, and he has 5 sycamores and 5 cypress trees to plant in one row. What is the probability that he randomly plants the trees so that all 5 sycamores are next to each other and all 5 cypress trees are next to each other? Express your answer as a fraction or a decimal number rounded to four decimal places.
+Answer: _______________
+
+
+```{r}
+# 5 sycamores
+s <- c(5/10,4/9,3/8,2/7,1/6)
+p_s <- prod(s)
+
+# 5 cypress
+c <- c(5/10,4/9,3/8,2/7,1/6)
+p_c <- prod(s)
+
+prob <- p_s + p_c
+print(paste0('8) probability = ', round(prob,4)))
+
+```
+
+
+9. If you draw a queen or lower from a standard deck of cards, I will pay you $4. If not, you
+pay me $16. (Aces are considered the highest card in the deck.)
+
+Notes
+- queen, king, ace get $4
+- all else - $16
+
+
+Step 1. Find the expected value of the proposition. Round your answer to two decimal
+places. Losses must be expressed as negative values. 
+Answer: $_______________
+
+
+```{r}
+
+# winning hands
+l <- 2 * 4
+w <- 52 - l
+
+e <- w/52*4 + l/52*-16
+print(paste0('9.1) expected returns = $', round(e,2)))
+
+```
+
+
+
+
+Step 2. If you played this game 833 times how much would you expect to win or lose? Round your answer to two decimal places. Losses must be expressed as negative values.
+Answer: $_______________
+
+```{r}
+e1 <- e * 833
+print(paste0('9.2) expected returns after 833 games= $', round(e1,2)))
+
+```
+
+
+
+
+<br><br>
+<b><i>Please show your work using an R-markdown document. Please name your assignment submission with your first initial and last name.</i></b>
+

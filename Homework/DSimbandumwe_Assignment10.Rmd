@@ -1,0 +1,109 @@
+---
+title: "DATA605_w10_Markov Chains and Random Walks"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+rm(list=ls())
+
+```
+
+
+```{r, include=FALSE}
+
+library(matlib) 
+library(pracma)
+library(stats)
+library(scales)
+library(expm)
+
+```
+
+
+
+# Question 1 
+Smith is in jail and has 1 dollar; he can get out on bail if he has 8 dollars.
+A guard agrees to make a series of bets with him. If Smith bets A dollars, he wins A dollars with probability .4 and loses A dollars with probability .6.
+
+Find the probability that he wins 8 dollars before losing all of his money if
+
+Facts
+- start 1 dollar needs 8 dollar
+- win 1 dollar .4
+- loss dollar .6
+
+
+
+(a) he bets 1 dollar each time (timid strategy).
+
+<b><i>The probablity that Smith gets out of jail with this strategy is 0.020</b></i>
+
+
+```{r}
+
+P <- matrix(
+	c(0,.6,0,0,0,0,0,0,0,
+	.4,0,.6,0,0,0,0,0,0,
+	0,.4,0,.6,0,0,0,0,0,
+	0,0,.4,0,.6,0,0,0,0,
+	0,0,0,.4,0,.6,0,0,0,
+	0,0,0,0,.4,0,.6,0,0,
+	0,0,0,0,0,.4,0,0,0,
+	.6,0,0,0,0,0,0,1,0,
+	0,0,0,0,0,0,.4,0,1
+	),9
+)
+P
+
+z <- P%^%10000000
+z <- round(z,3)
+z
+```
+
+
+
+
+(b) he bets, each time, as much as possible but not more than necessary to bring his fortune up to 8 dollars (bold strategy).
+
+<b><i>The probablity that Smith gets out of jail with this strategy is 0.064</b></i>
+
+
+```{r}
+
+P <- matrix(
+		c(0,0,0,0,0,0,0,0,0,
+		.4,0,0,0,.6,0,0,0,0,
+		0,0,0,0,0,0,0,0,0,
+		0,.4,0,0,0,.6,0,0,0,
+		0,0,0,0,0,0,0,0,0,
+		0,0,.4,0,0,0,.6,0,0,
+		0,0,0,0,0,0,0,0,0,
+		.6,.6,.6,.6,0,0,0,1,0,
+		0,0,0,.4,.4,.4,.4,0,1
+	),9
+)
+P
+
+z <- P%^%1000000000
+z <- round(z,3)
+z
+```
+
+
+(c) Which strategy gives Smith the better chance of getting out of jail?
+
+<b><i>The second strategy provides the best opportunity for success. Starting with 1 dollar the second strategy has a 0.064 probability of success vs 0.020 probability of success in the conservative betting approach</b></i>
+
+
+
+
+g an R-markdown document. Please name your assignment submission with your first initial and last name.</i></b>
+

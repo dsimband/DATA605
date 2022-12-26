@@ -1,0 +1,227 @@
+---
+title: "DATA605_w15_Multivariable Calculus"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+rm(list=ls())
+
+```
+
+
+```{r, include=FALSE}
+
+library(matlib) 
+library(ggplot2)
+library(dplyr)
+
+```
+
+
+
+# Question 1
+Find the equation of the regression line for the given points. Round any final values to the nearest hundredth, if necessary. (5.6,8.8), (6.3,12.4), (7,14.8), (7.7,18.2), (8.4,20.8)
+
+
+```{r}
+
+df <- data.frame(
+	x = c(5.6,6.3,7,7.7,8.4),
+	y = c(8.8,12.4,14.8,18.2,20.8)
+)
+
+df %>% ggplot() + geom_point(aes(x=x, y=y)) +
+	xlim(0, 25) + ylim(0, 25)
+
+lm <- lm(df, formula = y ~ x)
+summary(lm)
+
+
+```
+
+
+$$ 
+ y = a + \beta x \\
+ y = -14.8 + 4.26x
+$$
+
+
+
+# Question 2
+2. Find all local maxima, local minima, and saddle points for the function given below. Write your answer(s) in the form ( x, y, z ). Separate multiple points with a comma.
+
+
+```{r}
+d_dx = D(expr(24*x - 6*x*y^2 - 8*y^3),'x')
+d_dy = D(expr(24*x - 6*x*y^2 - 8*y^3),'y')
+d_dx
+d_dy
+```
+
+
+\[f(x,y) = 24x - 6xy^2  - 8y^3 \\ \]
+- first derivative x
+\[
+dx(x,y) = 6(y^2 - 4) \\
+\text{set dx =  0} \\
+0 = 6(y^2 - 4) \\
+y = +- 2 \\
+\text{-------------} \\
+f(x,y) = 24x - 6xy^2  - 8y^3 \\
+f(2,4) = 24x - 6xy^2  - 8y^3 \\
+f(2,2) = -64  \\
+(x,y,z) = (2,4,-64 ) \\
+\]
+- second derivative x
+\[dx^2(x,y) = 0 \\
+(x,y,z) = (4,2,-64 ) \text{ is a sadle point}
+\]
+
+
+
+
+
+- first derivative y
+\[
+dy(x,y) = -12xy + 24y^2 \\
+\text{set dy =  0} \\
+0 = -12xy + 24y^2 \\
+12xy = 24y^2 \\
+x = 2y \\
+\text{set y = +-2} \\
+x = +-4 \\
+\text{-------------} \\
+f(-2,-4) = 24x - 6xy^2  - 8y^3 \\
+f(-2,-4) = 64  \\
+(x,y,z) = (-4,-2,64) \text{ is a sadle point}\\
+\]
+
+- second derivative y
+\[
+dy^2(x,y) = -12x + 48y
+\text{set dy =  0} \\
+0 = -12x + 48y \\
+12x = 48y
+x = 2y
+\text{set x = 0} \\
+(x,y,z) = (-4,-2,64 ) \text{ is a sadle point}
+\]
+
+
+
+```{r}
+
+x <- 4
+y <- 2
+
+f = expression(24*x - 6*x*y^2  - 8*y^3)
+eval(f)
+
+
+x <- -4
+y <- -2
+
+f = expression(24*x - 6*x*y^2  - 8*y^3)
+eval(f)
+
+```
+
+
+
+
+# Question 3
+3. A grocery store sells two brands of a product, the "house" brand and a "name" brand. The manager estimates that if she sells the "house" brand for x dollars and the "name" brand for y dollars, she will be able to sell 81 - 21x + 17y units of the "house" brand and 40 + 11x - 23y units of the "name" brand.
+
+
+
+Step 1. Find the revenue function R ( x, y ).
+\[R(x,y) = -21x^2+81x +28xy - 23y^2 + 40y\]
+
+Step 2. What is the revenue if she sells the "house" brand for $2.30 and the "name" brand for $4.10?
+
+```{r}
+x <- 2.30
+y <- 4.10
+r <- expression(-21*x^2+81*x +28*x*y - 23*y^2 + 40*y)
+
+
+
+print(paste0('total revenue = ', eval(r)))
+```
+
+
+
+
+# Question 4
+4. A company has a plant in Los Angeles and a plant in Denver. The firm is committed to produce a total of 96 units of a
+product each week. The total weekly cost is given by \[C(x, y) = \frac{1}{6}x^2 + \frac{1}{6} y^2 + 7x + 25y + 700\], where x is the number of units produced in Los Angeles and y is the number of units produced in Denver. How many units should be produced in each plant to minimize the total weekly cost?
+
+
+```{r}
+
+y <- 0:96
+f <- function(y){return(1/6*(96-y)^2 + 1/6*y^2 + 7*(96-y) + 25*y +700)}
+curve(f, from = 20, to = 22, type="l", main = 'Graphs', col = 'blue')
+
+```
+
+
+
+\[
+C(x, y) = \frac{1}{6}x^2 + \frac{1}{6} y^2 + 7x + 25y + 700 \\
+\text{ x = 96 - y} \\
+C(x, y) = \frac{1}{6}(96-y)^2 + \frac{1}{6} y^2 + 7x + 25y + 700 \\
+Cy(x,y) = \frac{2}{3} (y - 21)
+\text{ xCy(x,y) = 0} \\
+0 = \frac{2}{3} (y - 21)
+y = 21
+x = 96 - 21 = 75
+C(75,21) = 2761
+\]
+
+
+
+
+```{r}
+
+x <- 75
+y <- 21
+f <- function(x,y){return(1/6*x^2 + 1/6*y^2 + 7*x + 25*y +700)}
+print(paste0('4) total cost C(75,21) =  ', f(75,21) ))
+
+```
+
+
+
+
+# Question 5
+5. Evaluate the double integral on the given region.
+\[\int\int (e^{8x+3y})  dA ;$  $R: 2 \le x \le 4$ and $2 \le y \le4\]
+
+
+Write your answer in exact form without decimals.
+\[
+\int_{2}^{4}\int_{2}^{4} (e^{8x+3y}) dxdy \\
+\text{from wolframalpha} \\
+\frac{1}{24}(e^{22}-e^{28}-e^{38}+e^{44})
+\]
+
+
+
+
+
+
+
+
+
+
+

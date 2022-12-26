@@ -1,0 +1,67 @@
+---
+title: "Discussion - Week5"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(matlib) 
+```
+
+
+# Example 1.2 (Coin Tossing) 
+
+As we have noted, our intuition suggests that the probability of obtaining a head on a single toss of a coin is 1/2. To have the computer toss a coin, we can ask it to pick a random real number in the interval [0, 1] and test to see if this number is less than 1/2. If so, we shall call the outcome heads; if not we call it tails. Another way to proceed would be to ask the computer to pick a random integer from the set {0,1}. The program CoinTosses carries out the experiment of tossing a coin n times. Running this program, with n = 20, resulted in:
+
+
+```{r}
+n <- 20
+result_lst <- vector(mode='list', length=n)
+
+for (i in 1:n ) {
+	result_lst[i] <- rbinom(1, 1, 0.5)
+}
+
+```
+
+
+# Exercises 1
+
+Modify the program CoinTosses to toss a coin n times and print out after every 100 tosses the proportion of heads minus 1/2. Do these numbers appear to approach 0 as n increases? Modify the program again to print out, every 100 times, both of the following quantities: the proportion of heads minus 1/2, and the number of heads minus half the number of tosses. Do these numbers appear to approach 0 as n increases?
+
+
+`
+```{r}
+
+n <- 10000
+calc_count = 1000
+
+result_lst <- vector(mode='list', length=n)
+
+for (i in 1:n ) {
+	result_lst[i] <- rbinom(1, 1, 0.5)
+	
+	if (i %% calc_count == 0) {
+		
+		s <- sum(unlist(result_lst)) / i - 0.5
+		h <- sum(unlist(result_lst)) - (0.5 * i)
+		print(paste0(i, ' = ' , s , ' : ' , h ))
+	}
+	
+}
+
+
+
+```
+
+
+

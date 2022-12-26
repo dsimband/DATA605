@@ -1,0 +1,43 @@
+---
+title: "Discussion - Week9"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(matlib) 
+```
+
+
+# Example 9.5
+
+A rookie is brought to a baseball club on the assumption that he will have a .300 batting average. (Batting average is the ratio of the number of hits to the number of times at bat.) In the first year, he comes to bat 300 times and his batting average is .267. Assume that his at bats can be considered Bernoulli trials with probability .3 for success. Could such a low average be considered just bad luck or should he be sent back to the minor leagues? Comment on the assumption of Bernoulli trials in this situation.
+
+
+```{r}
+p <- 0.3
+q <- 1-p
+n <- 300
+bat_avg <- 0.267
+
+se <- sqrt(p * q / n)
+prob <- pnorm(bat_avg, p, se)
+
+print(paste0('9.5) probability = ', round(prob,4)))
+
+```
+
+
+There is 10.6% probability that a batter with a .300 batting average will only get 80 (.267) in 300 at bats. There is a low likelihood that the batter in question is a .300 batter.
+
+
+

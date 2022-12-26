@@ -1,0 +1,97 @@
+---
+title: "Discussion - Week11"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(matlib) 
+library(pracma)
+library(readr)
+library(dplyr)
+library(explore)
+
+
+```
+
+
+# Hotels Las Vegas Strip
+
+Abstract: This dataset includes quantitative and categorical features from online reviews from 21 hotels located in Las Vegas Strip, extracted from TripAdvisor ([Web Link]).
+
+Data Set Information: All the 504 reviews were collected between January and August of 2015.
+
+Attribute Information: The dataset contains 504 records and 20 tuned features (as of â€œstatus = includedâ€, from Table 1 of the article mentioned below), 24 per hotel (two per each month, randomly selected), regarding the year of 2015. The CSV contains a header, with the names of the columns corresponding to the features marked as â€œstatus = includedâ€, from Table 1 of the aforementioned article.
+
+
+<b><i>
+
+- H0 - Hotel star rating does not predict the review score for a hotel in Las Vegas
+
+- H1 - Hotel star rating predicts the review score for a hotel in Las Vegas
+
+</b></i>
+
+
+
+```{r}
+
+destfile <- tempfile()
+download.file("https://archive.ics.uci.edu/ml/machine-learning-databases/00397/LasVegasTripAdvisorReviews-Dataset.csv", destfile)
+df <- read_delim(destfile, delim=';' ,col_names = TRUE, col_types = list('Hotel stars' = col_factor()))
+
+```
+
+
+
+```{r}
+	df %>% explain_tree(target = Score)
+```
+
+
+
+```{r}
+
+
+mylm <- lm(df$Score ~ df$'Hotel stars')
+summary(mylm)
+
+```
+
+<b><i>The linear regression model has p-value of less 0.05 so we reject the Null hypothesis in favour of the alternate hypothesis. However the model has a low predictive capability with an Adjusted R-squared of 0.068 </b></i>
+
+
+
+```{r}
+
+par(mfrow=c(2,2))
+plot(mylm)
+
+```
+
+
+
+
+
+
+```{r}
+
+hist(mylm$residuals, main = "Histogram of Residuals", xlab= "", col= "lightblue")
+
+```
+<b><i>
+	
+- Residuals vs Fitted - residuals are uniformly scattered around 0
+- Normal Q-Q - we see a stair step that deviates indicated line with obvious non linearity
+- Residual Historgram - the residial histogram is not normally distributed and skews right
+
+</b></i>

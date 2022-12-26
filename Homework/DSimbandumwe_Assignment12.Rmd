@@ -1,0 +1,217 @@
+---
+title: "DATA605_w12_Regression Analysis"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+rm(list=ls())
+options(scipen=999)
+
+```
+
+
+```{r, include=FALSE}
+
+library(matlib) 
+library(pracma)
+library(readr)
+
+library(explore)
+library(graphics)
+library(ggplot2)
+
+library(ResourceSelection)
+library(glmnet)
+
+library(MASS)
+library(tidyverse)
+library(caret)
+library(leaps)
+library(regclass)
+
+library(dplyr)
+
+
+```
+
+
+
+# Overview
+The attached who.csv dataset contains real-world data from 2008. The variables included follow.
+Country: name of the country
+LifeExp: average life expectancy for the country in years
+InfantSurvival: proportion of those surviving to one year or more
+Under5Survival: proportion of those surviving to five years or more
+TBFree: proportion of the population without TB.
+PropMD: proportion of the population who are MDs
+PropRN: proportion of the population who are RNs
+PersExp: mean personal expenditures on healthcare in US dollars at average exchange rate
+GovtExp: mean government expenditures per capita on healthcare, US dollars at average exchange rate 
+TotExp: sum of personal and government expenditures.
+
+
+
+```{r}
+
+df <- read_csv('Homework/data/xid-528551256_1.csv')
+
+```
+
+
+
+# Question 1
+Provide a scatterplot of LifeExp~TotExp, and run simple linear regression. Do not transform the variables. Provide and interpret the F statistics, R^2, standard error,and p-values only. Discuss whether the assumptions of simple linear regression met.
+
+```{r}
+
+ggplot(df, aes(x=TotExp, y=LifeExp)) + geom_point()
+df_lm.1 <- lm(data = df, LifeExp ~ TotExp)
+s_lm <- summary(df_lm.1)
+s_lm
+
+```
+
+
+
+
+<b><i>
+
+- F-statistic =`r round(s_lm$fstatistic['value'],4)`, corresponding p-value = `r round(s_lm$coefficients[2,4],4)`. Since this p-value is less than .05, the model as a whole is statistically significant.
+
+- Multiple R-squared = `r round(s_lm$adj.r.squared,4)` This tells us that `r round(s_lm$adj.r.squared*100,2)`% of the variation in the response variable, LifeExp, can be explained by the predictor variable, TotExp.
+
+Even thought the model is statistically significant as a whole it has limited predictive power. 
+
+</b></i>
+
+
+
+# Question 2
+Raise life expectancy to the 4.6 power (i.e., LifeExp^4.6). Raise total expenditures to the 0.06 power (nearly a log transform, TotExp^.06). Plot LifeExp^4.6 as a function of TotExp^.06, and r re-run the simple regression model using the transformed variables. Provide and interpret the F statistics, R^2, standard error, and p-values. Which model is "better?"
+
+
+```{r}
+
+df$LifeExp2 <- df$LifeExp^4.6
+df$TotExp2 <- df$TotExp^0.06
+
+ggplot(df, aes(x=TotExp2, y=LifeExp2)) + geom_point()
+df_lm.2 <- lm(data = df, LifeExp2 ~ TotExp2)
+s_lm <- summary(df_lm.2)
+s_lm
+
+
+```
+
+
+<b><i>
+
+- F-statistic =`r round(s_lm$fstatistic['value'],4)`, corresponding p-value = `r round(s_lm$coefficients[2,4],4)`. Since this p-value is less than .05, the model as a whole is statistically significant.
+
+- Multiple R-squared = `r round(s_lm$adj.r.squared,4)` This tells us that `r round(s_lm$adj.r.squared*100,2)`% of the variation in the response variable, LifeExp2, can be explained by the predictor variable, TotExp2.
+
+The changes to the model have significantly increased the predictive power of the model while maintaining its statistical significance. 
+
+</b></i>
+
+
+# Question 3
+Using the results from 3, forecast life expectancy when TotExp^.06 =1.5. Then forecast life expectancy when TotExp^.06=2.5.
+
+
+```{r}
+
+pred_df1 <- data.frame(TotExp2 = c(1.5,2.5))
+pred_df1$LifeExp2 <- predict(df_lm.2,pred_df1)
+pred_df1
+
+```
+
+
+
+
+# Question 4
+Build the following multiple regression model and interpret the F Statistics, R^2, standard error, and p-values. How good is the model?
+
+$$ LifeExp = b0+b1 x PropMd + b2 x TotExp +b3 x PropMD x TotExp $$
+```{r}
+
+df_lm.3 <- lm(data = df, LifeExp ~ PropMD + TotExp + PropMD * TotExp)
+s_lm <- summary(df_lm.3)
+s_lm
+
+
+
+```
+
+<b><i>
+
+- F-statistic =`r round(s_lm$fstatistic['value'],4)`, corresponding p-value = `r round(s_lm$coefficients[2,4],4)`. Since this p-value is less than .05, the model as a whole is statistically significant.
+
+- Multiple R-squared = `r round(s_lm$adj.r.squared,4)` This tells us that `r round(s_lm$adj.r.squared*100,2)`% of the variation in the response variable, LifeExp2, can be explained by the predictor variable, TotExp2 and PropPD. The adjusted R-squared highlights the limited explanitory power or the model. 
+
+</b></i>
+
+
+
+# Question 5
+Forecast LifeExp when PropMD=.03 and TotExp = 14. Does this forecast seem realistic? Why or why not?
+
+
+```{r}
+
+pred_df2 <- data.frame(PropMD = .03, TotExp = 15)
+pred_df2$LifeExp <- predict(df_lm.3,pred_df2)
+pred_df2
+
+
+```
+
+
+
+<b><i>
+
+- No it does not seem realistic. Although the PropMD is high 0.03 and would indicate a higher life expectancy, the TotExp is low at 15 indicating a lower life expectancy. 
+- There are not many data points that exibit the characteristics of these two threshold. This limits the ability of the model to accuratly forcast values with these inputs.
+- 
+
+</b></i>
+
+
+
+```{r}
+df1 <- df %>% filter(PropMD < 0.03)
+
+ggplot(df1, aes(x=PropMD, y=LifeExp)) + geom_point()
+ggplot(df1, aes(x=TotExp, y=LifeExp)) + geom_point()
+ggplot(df1, aes(x=TotExp, y=PropMD)) + geom_point()
+
+
+```
+
+
+
+```{r}
+
+df1 <- df %>% filter(TotExp < 50)
+
+ggplot(df1, aes(x=PropMD, y=LifeExp)) + geom_point()
+ggplot(df1, aes(x=TotExp, y=LifeExp)) + geom_point()
+ggplot(df1, aes(x=TotExp, y=PropMD)) + geom_point()
+
+```
+
+
+
+
+<br><br>
+<b><i>Please show your work using an R-markdown document. Please name your assignment submission with your first initial and last name.</i></b>
+

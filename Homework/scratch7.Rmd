@@ -1,0 +1,256 @@
+---
+title: "Scratch 4"
+output: html_document
+date: "2022-09-14"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(matlib) 
+library(pracma)
+
+```
+
+
+```{r, include=FALSE}
+
+library(matlib) 
+library(pracma)
+library(stats)
+library(scales)
+
+```
+
+
+1. Let X1, X2, . . . , Xn be n mutually independent random variables, each of which is uniformly distributed on the integers from 1 to k. Let Y denote the minimum of the Xi’s. Find the distribution of Y .
+
+- 1 to k
+- y min value of Xi
+
+
+
+```{r}
+
+d <- '1/k'
+print(paste0('1) distribution = ', d))
+
+```
+
+
+2. Your organization owns a copier (future lawyers, etc.) or MRI (future doctors). This machine has a manufacturer’s expected lifetime of 10 years. This means that we expect one failure every ten years. (Include the probability statements and R Code for each part.).
+
+- life = 10 years
+- mean failure = 10 years
+- 10 years between events
+
+
+a. What is the probability that the machine will fail after 8 years?. Provide also the expected value and standard deviation. Model as a geometric. (Hint: the probability is equivalent to not failing during the first 8 years..)
+
+- prob machine will fail in 8 years
+
+```{r}
+
+p <- 1/10
+n <- 8
+prob <- (1-p)^(n-1) * (p)
+e <- 1/p
+std <- sqrt((1-p)/p^2)
+print(paste0('2.d) probability = ', round(prob,4)))
+print(paste0('2.d) mean / expected = ', round(e,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+
+```
+
+
+```{r}
+k <- 8
+p <- 1/10
+
+dgeom(k,p)
+```
+
+
+
+b. What is the probability that the machine will fail after 8 years?. Provide also the expected value and standard deviation. Model as an exponential.
+
+
+```{r}
+
+mu <- 10
+l <- 1/10
+k <- 8
+
+prob <- exp(-k/mu)
+std <- mu
+
+print(paste0('2.d) probability = ', round(prob,4)))
+print(pexp(k, l, lower.tail = FALSE))
+print(paste0('2.d) mean / expected = ', round(mu,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+
+```
+
+
+```{r}
+l <- 1/20
+mu <- 1/l
+x <- 10
+
+prob <- 1 - exp(-x/mu)
+std <- mu
+print(paste0('2.d) probability = ', round(prob,4)))
+print(pexp(10, 1/20, lower.tail = TRUE))
+print(paste0('2.d) mean / expected = ', round(mu,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+```
+
+```{r}
+
+l <- 1/20
+mu <- 1/l
+x <- 30
+
+prob <- exp(-x/mu)
+std <- mu
+print(paste0('2.d) probability = ', round(prob,4)))
+print(pexp(30, 1/20, lower.tail = FALSE))
+print(paste0('2.d) mean / expected = ', round(mu,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+
+```
+
+
+c. What is the probability that the machine will fail after 8 years?. Provide also the expected value and standard deviation. Model as a binomial. (Hint: 0 success in 8 years)
+
+
+
+```{r}
+
+p <- 1/10
+n <- 8
+x <- 0
+e <- n*p
+std <- sqrt(p*(1-p)/n)
+
+prob <- p^x * (1-p)^(n-x)
+print(paste0('2.d) probability = ', round(prob,4)))
+print(dbinom(0,8,0.1))
+
+print(paste0('2.d) expected = ', round(e,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+
+```
+
+
+d. What is the probability that the machine will fail after 8 years?. Provide also the expected value and standard deviation. Model as a Poisson.
+
+
+```{r}
+#mu <- 10
+l <- 10
+e <- l
+x <- 8
+
+prob <-((l^x) * exp(-l)) / factorial(x)
+
+std <- sqrt(l)
+print(paste0('2.d) probability = ', round(prob,4)))
+print(ppois(x, l, lower.tail = FALSE))
+print(paste0('2.d) expected = ', round(e,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+
+```
+
+
+```{r}
+
+l <- 10
+x <- 8
+x_lst <- c(1:x)
+
+p <- prob <-((l^x_lst) * exp(-l)) / factorial(x_lst)
+prob <- 1 - sum(p)
+
+print(paste0('2.d) probability = ', round(prob,4)))
+print(ppois(x, l, lower.tail = FALSE))
+
+```
+
+
+```{r}
+
+l <- 12
+x <- 10
+prob1 <- ((l^x) * exp(-l)) / factorial(x)
+print(paste0('a) probability = ', round(prob1,4)))
+
+x_lst <- c(1:x-1)
+p <- ((l^x_lst) * exp(-l)) / factorial(x_lst)
+prob2 <- 1 - sum(p)
+print(paste0('b) probability = ', round(prob2,4)))
+
+l <- 12/24
+x <- 1
+x_lst <- c(0,1)
+p <- ((l^x_lst) * exp(-l)) / factorial(x_lst)
+prob3 <- 1 - sum(p)
+print(paste0('c) probability = ', round(prob3,7)))
+
+```
+
+
+
+- average rate of 3 per hour
+- 1/6
+
+```{r}
+
+l <- 3
+x <- 5
+
+prob <-((l^x) * exp(-l)) / factorial(x)
+mu <- 1/l
+std <- sqrt(l)
+print(paste0('2.d) probability = ', round(prob,4)))
+print(dpois(x, l))
+print(paste0('2.d) mean / expected = ', round(mu,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+
+
+```
+
+
+```{r}
+
+
+l <- 3
+x <- 5
+
+prob <-((l^x) * exp(-l)) / factorial(x)
+mu <- 1/l
+std <- sqrt(l)
+print(paste0('2.d) probability = ', round(prob,4)))
+print(ppois(x, l, lower.tail = TRUE))
+print(paste0('2.d) mean / expected = ', round(mu,4)))
+print(paste0('2.d) std deviation = ', round(std,4)))
+
+
+```
+
+
+
+
+
+
+
+```{r}
+
+x <- seq(0, 6, length=7)
+y <- dunif(x, min = 0, max = 4)
+
+```
+
+

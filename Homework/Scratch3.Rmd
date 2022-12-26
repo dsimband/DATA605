@@ -1,0 +1,113 @@
+---
+title: "Scratch 2"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(matlib) 
+```
+
+
+# Week 3
+
+```{r}
+
+A <- matrix(c(-13,12,24, -8,7,16, -4,4,7), 3)
+e <- eigen(A)
+print(e$values)
+print(e$vectors)
+
+```
+
+
+
+```{r}
+A <- matrix(c(2,1,1, 1,2,1, 1,1,2), 3)
+e <- eigen(A)
+print(e$values)
+print(e$vectors)
+```
+
+
+
+
+
+```{r}
+library(pracma)
+A <- matrix(c(18,-4,-9,5, -15,8,9,-6, 33,-6,-16,9, -15,6,9,-4), 4)
+A
+
+A1 <- A - 2*diag(4)
+A1
+
+rref(A1)
+
+```
+
+
+```{r}
+
+library(pracma)
+A <- matrix(c(2,1,1, 1,2,1, 1,1,2), 3)
+A
+
+print(paste0('eigen values / vectors'))
+e <- eigen(A)
+print(e$values)
+print(e$vectors)
+
+
+print(paste0('lamda 4'))
+A1 <- A - 4*diag(3)
+A1
+
+rref(A1)
+
+print(paste0('lamda 1'))
+A2 <- A - 1*diag(3)
+A2
+
+A2 <- rref(A2)
+A2
+
+```
+
+
+
+```{r}
+A <- matrix(c(-16,0,24, 84,40,-36, 0,0,8), 3)
+A
+
+print(paste0('eigen values / vectors'))
+e <- eigen(A)
+print(e$values)
+print(e$vectors)
+
+
+print(paste0('lamda 40'))
+A1 <- 40*diag(3) - A
+A1
+rref(A1)
+
+print(paste0('lamda -16'))
+A2 <- -16*diag(3) - A
+A2
+rref(A2)
+
+print(paste0('lamda 8'))
+A2 <- 8*diag(3) - A
+A2
+rref(A2)
+
+```
+

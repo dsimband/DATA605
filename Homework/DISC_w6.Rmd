@@ -1,0 +1,45 @@
+---
+title: "Discussion - Week6"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(matlib) 
+```
+
+
+# Example 3.16 (Coin Tossing) 
+
+Prove that at least two people in Atlanta, Georgia, have the same initials, assuming no one has more than four initials.
+
+
+
+```{r}
+
+factorial(26) / (factorial(4) * factorial(26-4))
+	
+```
+
+
+
+
+
+```{r}
+26 + 325 + 2600 + 14950
+
+
+```
+
+
+
+

@@ -1,0 +1,242 @@
+---
+title: "Discussion - Week12"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+```
+
+```{r echo=FALSE, include=FALSE}
+library(matlib) 
+library(pracma)
+library(readr)
+
+library(explore)
+library(graphics)
+library(ggplot2)
+
+library(ResourceSelection)
+library(glmnet)
+
+library(MASS)
+library(tidyverse)
+library(caret)
+library(leaps)
+library(regclass)
+
+library(dplyr)
+
+```
+
+
+# Week 12 - Assignment
+Using R, build a multiple regression model for data that interests you.  Include in this model at least one quadratic term, one dichotomous term, and one dichotomous vs. quantitative interaction term.  Interpret all coefficients. Conduct residual analysis.  Was the linear model appropriate? Why or why not?
+
+
+Notes:
+- one quadratic term
+- one dichotomous term
+- and one dichotomous vs. quantitative interaction term
+
+
+Questions:
+- Interpret all coefficients. 
+- Conduct residual analysis
+- Was the linear model appropriate?
+
+
+
+
+# Medical insurance costs
+
+This dataset was inspired by the book Machine Learning with R by Brett Lantz. The data contains medical information and costs billed by health insurance companies. It contains 1338 rows of data and the following columns: age, gender, BMI, children, smoker, region and insurance charges.
+
+Columns
+
+- age: age of primary beneficiary
+- sex: insurance contractor gender, female, male
+- bmi: Body mass index, providing an understanding of body, weights that are relatively high or low relative to height, objective index of body weight (kg / m ^ 2) using the ratio of height to weight, ideally 18.5 to 24.9
+- children: Number of children covered by health insurance / Number of dependents
+- smoker: Smoking
+- region: the beneficiary's residential area in the US, northeast, southeast, southwest, northwest.
+- charges: Individual medical costs billed by health insurance
+
+
+<b><i>
+
+- H0 - The medical information captured in the insurance dataset does not predict the level of charges for individuals. age, sex, bmi, children, smoker, and region are not predictors of medical charges.
+- H1 - The medical information captured in the insurance dataset does predict the level of charges for individuals. age, sex, bmi, children, smoker, and region are predictors of medical charges.
+
+</b></i>
+
+
+
+```{r}
+
+destfile <- tempfile()
+download.file("https://gist.githubusercontent.com/meperezcuello/82a9f1c1c473d6585e750ad2e3c05a41/raw/d42d226d0dd64e7f5395a0eec1b9190a10edbc03/Medical_Cost.csv", destfile)
+df <-  read_csv(destfile, col_types = list('region' = col_factor(), 'children' = col_factor()))
+
+```
+
+
+
+```{r}
+
+
+
+
+
+
+sqrt(10^2 + 30^2)
+
+20 / (sqrt(1000) - 30)
+
+
+
+
+sqrt(40^2 + 30^2)
+
+
+
+```
+
+<b><i>
+
+
+
+</b></i>
+
+
+
+
+
+```{r}
+
+#library(stats)
+
+c.func <- function(A,B){return(sqrt(A^2 + B^2))}
+C <- c.func(A=10,B=30)
+A <- 30
+
+
+
+b.func <- function(C,A){return(sqrt(C^2 - A^2))}
+b.dev <- D(b.func ~ C )
+
+
+
+deriv(sqrt(C^2 - A^2))
+
+
+```
+
+
+
+
+
+```{r}
+f = expression(x^2 + 5*x + 1)
+D(f, "x")
+
+
+
+```
+
+
+
+
+
+
+
+```{r}
+
+pxy = D(x * sin(y) ~ x & y)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+f <- function(x){return(x**2 -3*x + 2)} 
+g <- function(x){return(-3*x + 3)}
+
+curve(f, from = -2, to = 3, type="l", main = 'Graphs', col = 'blue')
+curve(g, from = -2, to = 3, type="l", col = 'red', add=TRUE)
+
+
+```
+
+
+
+```{r}
+r <- uniroot(function(x) f(x) - g(x) , c(-10, -0.001), tol=1e-5) 
+r$root
+```
+
+
+
+
+
+
+```{r}
+
+r <- uniroot(function(x) f(x) - g(x) , c(0.001,6), tol=1e-5) 
+r$root
+
+```
+
+
+
+
+
+
+```{r}
+
+area.f <- integrate(f, lower = -1, upper = 1)
+area.g <- integrate(g, lower = -1, upper = 1)
+area.g$value - area.f$value
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

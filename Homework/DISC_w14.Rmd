@@ -1,0 +1,72 @@
+---
+title: "Discussion - Week14"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+```
+
+```{r echo=FALSE, include=FALSE}
+library(matlib) 
+library(pracma)
+library(readr)
+
+library(explore)
+library(graphics)
+library(ggplot2)
+
+library(ResourceSelection)
+library(glmnet)
+
+library(MASS)
+library(tidyverse)
+library(caret)
+library(leaps)
+library(regclass)
+
+library(dplyr)
+
+```
+
+
+
+
+
+
+
+
+
+```{r}
+
+dcount <- 12
+
+
+f <- expression(1/(1-x))
+x <- 0
+
+for (i in 1:dcount) {
+	f <- D(f, "x")
+	print(paste0('f(',i,') = ', eval(f)))
+}
+
+
+
+```
+
+
+
+
+
+
+
+
+
+

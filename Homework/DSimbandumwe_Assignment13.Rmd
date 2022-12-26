@@ -1,0 +1,153 @@
+---
+title: "DATA605_w13_Univariate and Multivariate Calculus"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+rm(list=ls())
+options(scipen=999)
+
+```
+
+
+```{r, include=FALSE}
+
+library(matlib) 
+library(ggplot2)
+
+```
+
+
+
+# Question 1
+Use integration by substitution to solve the integral below.
+
+
+$$
+
+\int 4e^{-7x} dx \\
+
+assume: u = -7x \\
+
+\int \frac{4}{-7}e^{u} du \\
+\frac{4}{-7}e^{u} + C \\
+
+u = -7x \\
+
+answer: 
+- \frac{4}{7}e^{-7x} + C
+
+$$
+
+
+
+
+
+# Question 2
+Biologists are treating a pond contaminated with bacteria. The level of contamination is changing at a rate of $\frac{dN}{dt} = - \frac{3150}{t^{4}} - 220$ bacteria per cubic centimeter per day, where t is the number of days since treatment began. Find a dt t4 function N( t ) to estimate the level of contamination if the level after 1 day was 6530 bacteria per cubic centimeter.
+
+$$
+
+\frac{dN}{dt} = - \frac{3150}{t^{4}} - 220 \\
+t = 1, bacteria= 6530 cm^3 \\
+f(1) = \int - \frac{3150}{t^{4}} - 220 \\
+f(1) = \frac{3150}{3t^{3}} - 220t + C \\
+f(1) = \frac{1050}{t^3} - 220t + C\\
+t = 1, bacteria= 6530 cm^3 \\
+f(1) = \frac{1050}{1^3} - 220(1) + C \\
+f(1) = \frac{1050}{1^3} - 220(1) + C = 6530 cm^3\\
+C = 5700 cm^3\\
+f(1) = \frac{1050}{t^3} - 220t +  5700 \\
+
+$$
+
+
+
+# Question 3
+
+Find the total area of the red rectangles in the figure below, where the equation of the line is f ( x ) = 2x - 9.
+
+
+```{r}
+
+f <- function(x){return(2*x - 9)}
+curve(f, from = -5, to = 10, type="l", main = 'Graphs', col = 'blue')
+area.f <- integrate(f, lower = 4, upper = 8)
+print(paste0('3) area =  ', area.f$value ))
+
+```
+
+
+
+
+# Question 4
+Find the area of the region bounded by the graphs of the given equations.
+y = x2 - 2x - 2, y = x + 2
+Enter your answer below.
+
+```{r}
+
+f <- function(x){return(x^2 - 2*x - 2)}
+g <- function(x){return(x + 2)}
+curve(f, from = -2, to = 5, type="l", main = 'Graphs', col = 'blue', ylim=c(-10,10))
+curve(g, from = -2, to = 5, type="l", col = 'red', add=TRUE)
+
+area.f <- integrate(f, lower = -1, upper = 4)
+area.g <- integrate(g, lower = -1, upper = 4)
+area = area.g$value - area.f$value
+
+
+print(paste0('4) area =  ', round(area,4) ))
+
+
+```
+
+
+
+
+# Question 5
+A beauty supply store expects to sell 110 flat irons during the next year. It costs \$3.75 to store one flat iron for one year. There is a fixed cost of \$8.25 for each order. Find the lot size and the number of orders per year that will minimize inventory costs.
+
+
+```{r}
+
+f <- function(n){return(3.75*(110/(2*n)) + 8.25*n)}
+curve(f, from = 1, to = 40, type="l", main = 'Graphs', col = 'blue', xlim=c(1,40))
+
+f(3)
+f(4)
+f(5)
+f(6)
+f(7)
+f(8)
+f(9)
+
+```
+
+$$
+c = 3.75 * \frac{110}{2n} + 8.25n \\
+\frac{dc}{dn} = \frac{206.25}{n} + 8.25n \\
+\frac{dc}{dn} = -206.25n^-2 + 8.25 \\
+0 = -206.25n^-2 + 8.25 \\
+\frac{-8.25}{-206.25} = n^{-2}
+5 = n
+
+$$
+
+5 orders in the year will reduce the overall costs.
+
+
+
+
+
+<br><br>
+<b><i>Please show your work using an R-markdown document. Please name your assignment submission with your first initial and last name.</i></b>
+

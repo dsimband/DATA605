@@ -1,0 +1,41 @@
+---
+title: "Discussion - Week15"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+```
+
+```{r echo=FALSE, include=FALSE}
+
+library(matlib) 
+
+```
+
+
+
+```{r}
+x <- 1
+y <- 2
+
+
+f = expression(x^2*y - x + 2*y + 3)
+f.dx <- D(f, "x")
+print(paste0('f.dx(1,2)=', eval(f.dx)))
+
+f.dy <- D(f, "y")
+print(paste0('f.dy(1,2)=', eval(f.dy)))
+
+```
+
+
+
+

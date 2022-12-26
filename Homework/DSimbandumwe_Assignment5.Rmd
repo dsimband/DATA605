@@ -1,0 +1,361 @@
+---
+title: "DATA605_w5_Probability Distributions"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+rm(list=ls())
+
+```
+
+
+```{r, include=FALSE}
+
+library(matlib) 
+library(pracma)
+library(stats)
+
+```
+
+
+## 1. Bayesian
+
+1. (Bayesian). A new test for multinucleoside-resistant (MNR) human immunodeficiency virus type 1 (HIV-1) variants was recently developed. The test maintains 96% sensitivity, meaning that, for those with the disease, it will correctly report “positive” for 96% of them. The test is also 98% specific, meaning that, for those without the disease, 98% will be correctly reported as “negative.” MNR HIV-1 is considered to be rare (albeit emerging), with about a .1% or .001 prevalence rate. Given the prevalence rate, sensitivity, and specificity estimates, what is the probability that an individual who is reported as positive by the new test actually has the disease? If the median cost (consider this the best point estimate) is about $100,000 per positive case total and the test itself costs $1000 per administration, what is the total first-year cost for treating 100,000 individuals?
+
+
+Variables
+- sensitivity = 96%
+- specific = 98%
+- prevalence rate = 0.1%
+
+
+Variables
+- median cost = $100,000 per positive case
+- test cost = $1000
+
+<b> 1.2 What is the total first-year cost for treating 100,000 individuals? </b>
+
+|		n = 100k, disease = 0.1%, people with disease = 100, people test positive with disease = 96
+|		n = 100k, no disease = 99.9%, people without disease = 99,900, people test positive without disease = 1998
+|		cost treated test positive with disease = 96 x 100k = 9.6M
+|		cost treated test positive without disease = 1998 x 100k = 199.8M
+|		cost of the test = 100k x 1k = 100M
+|		total cost = 309.4M
+
+
+
+```{r}
+
+# What is the probability that an individual who is reported as positive by the new test actually has the disease?
+
+# p =  positive test_cost
+# h0 = negative hiv
+# h1 = positive hiv
+
+h0 <- 1 - 0.001
+h1 <- 0.001
+
+p_h0 <- 1-0.98
+p_h1 <- 0.96
+
+prob <- (h1 * p_h1) / (h1*p_h1 + p_h0*h0)
+print(paste0('1.1) probability = ', round(prob*100,2), '%'))
+
+
+
+# What is the total first-year cost for treating 100,000 individuals?
+n <- 100000
+test_cost <- 1000 * n
+treat_cost_disease <- 0.1/100 * 96/100 * n * 100000
+treat_cost_no_disease <- 99.9/100 * 2/100 * n * 100000
+total_cost = test_cost + treat_cost_disease + treat_cost_no_disease
+
+print(paste0('1.2) total cost = $', total_cost/10^6, ' M'))
+
+
+```
+
+
+
+
+## 2. Binomial
+
+2. (Binomial). The probability of your organization receiving a Joint Commission inspection in any given month is .05. What is the probability that, after 24 months, you received exactly 2 inspections? What is the probability that, after 24 months, you received 2 or more inspections? What is the probability that your received fewer than 2 inspections? What is the expected number of inspections you should have received? What is the standard deviation?
+
+
+Variables
+- inspection 0.05 prob / month
+
+
+```{r}
+
+p <- 0.05
+n <- 24
+k <- 2
+
+
+# What is the probability that, after 24 months, you received exactly 2 inspections?
+prob <- dbinom(k, size=n, prob=p) 
+print(paste0('2.1) probability = ', round(prob*100,2), '%'))
+
+
+# What is the probability that, after 24 months, you received 2 or more inspections?
+prob <- 1 - (dbinom(0, size=n, prob=p) + dbinom(1, size=n, prob=p))
+print(paste0('2.2) probability = ', round(prob*100,2), '%'))
+
+
+# What is the probability that your received fewer than 2 inspections? 	
+prob <- (dbinom(0, size=n, prob=p) + dbinom(1, size=n, prob=p))
+print(paste0('2.3) probability = ', round(prob*100,2), '%'))
+
+# What is the expected number of inspections you should have received? 
+p <- 0.05
+n <- 24
+
+l = p * n
+print(paste0('2.4) expected # inspections = ', l))
+
+
+# What is the standard deviation?
+p <- 0.05
+n <- 24
+q <- 1-p
+
+std <- sqrt(p*n*q)
+print(paste0('2.5) standard deviation = ', round(std,4)))
+	
+```
+
+
+
+
+## 3. Poisson
+
+3. (Poisson). You are modeling the family practice clinic and notice that patients arrive at a rate of 10 per hour. What is the probability that exactly 3 arrive in one hour? What is the probability that more than 10 arrive in one hour? How many would you expect to arrive in 8 hours? What is the standard deviation of the appropriate probability distribution? If there are three family practice providers that can see 24 templated patients each day, what is the percent utilization and what are your recommendations?
+
+variables
+- patients arrive rate 10 per hour
+
+
+```{r}
+
+l <- 10
+
+#What is the probability that exactly 3 arrive in one hour? 
+x <- 3
+prob <- dpois(x, l)
+print(paste0('3.1) prob = ', round(prob,4)*100, '%'))
+
+
+#What is the probability that more than 10 arrive in one hour? 
+x <- 10
+prob <- ppois(x, l, lower.tail = FALSE)
+print(paste0('3.2) prob = ', round(prob,4)*100, '%'))
+
+	
+#How many would you expect to arrive in 8 hours? 
+h <- 8
+e <- l * h
+print(paste0('3.3) expected 8 hours = ', round(e,4)))
+
+	
+#What is the standard deviation of the appropriate probability distribution? 
+std <- sqrt(l)	
+print(paste0('3.4) standard deviation = ', round(std,4)))	
+	
+
+#If there are three family practice providers that can see 24 templated patients each day, what is the percent utilization and what are your recommendations?
+dr <- 3
+l_dr <- 24
+pat_per_day <- 8 * l
+print(paste0('3.4) utilization = ', round(pat_per_day/(l_dr*dr)*100,4),'%'))
+
+
+```
+
+
+
+## 4. Hypergeometric
+
+4. (Hypergeometric). Your subordinate with 30 supervisors was recently accused of favoring nurses. 15 of the subordinate’s workers are nurses and 15 are other than nurses. As evidence of malfeasance, the accuser stated that there were 6 company-paid trips to Disney World for which everyone was eligible. The supervisor sent 5 nurses and 1 non-nurse. If your subordinate acted innocently, what was the probability he/she would have selected five nurses for the trips? How many nurses would we have expected your subordinate to send? How many non-nurses would we have expected your subordinate to send?
+
+Variable
+- subs = 15
+- trip = 6
+- n = 5
+- o = 1
+
+
+
+```{r}
+
+x <- 5
+m <- 15
+n <- 15
+k <- 6
+
+# If your subordinate acted innocently, what was the probability he/she would have selected five nurses for the trips? 
+prob <- dhyper(x, m, n, k)
+print(paste0('4.1) prob = ', round(prob*100,2),'%'))
+
+
+#How many nurses would we have expected your subordinate to send? 
+print(paste0('4.2) number of nurses = ', 3))	
+	
+#How many non-nurses would we have expected your subordinate to send?
+print(paste0('4.2) number of non-nurses = ', 3))
+
+```
+
+
+
+
+
+## 5. Geometric
+
+5. (Geometric). The probability of being seriously injured in a car crash in an unspecified location is about .1% per hour. A driver is required to traverse this area for 1200 hours in the course of a year. What is the probability that the driver will be seriously injured during the course of the year? In the course of 15 months? What is the expected number of hours that a driver will drive before being seriously injured? Given that a driver has driven 1200 hours, what is the probability that he or she will be injured in the next 100 hours?
+
+
+Variables
+- prob injury 0.1% per hour
+- hours per year 1200
+
+```{r}
+
+p <- 0.1/100
+n <- 1200
+
+
+#What is the probability that the driver will be seriously injured during the course of the year? 
+prob <- pgeom(q=n ,prob=p)
+print(paste0('5.1) prob = ', round(prob*100,2),'%'))
+
+
+# In the course of 15 months? What is the expected number of hours that a driver will drive before being seriously injured? 
+e <- (1-p) / p
+#e <- p * n * 15/12
+print(paste0('5.2) expected injury = ', e, ' hours'))
+
+
+#Given that a driver has driven 1200 hours, what is the probability that he or she will be injured in the next 100 hours?
+a1 <- pgeom(q = n, prob = p, lower.tail = TRUE)
+a2 <- pgeom(q = n+100, prob = p, lower.tail = TRUE)
+print(paste0('5.3) prob expected injury = ', round((a2-a1)*100,2),'%'))
+
+```
+
+
+## 6. Hospital
+
+6. You are working in a hospital that is running off of a primary generator which fails about once in 1000 hours. What is the probability that the generator will fail more than twice in 1000 hours? What is the expected value?
+
+Variables
+- fails 1 / 1000
+
+
+```{r}
+
+p <- 1/1000
+n <- 2
+
+# What is the probability that the generator will fail more than twice in 1000 hours? 
+prob <- dgeom(x=n ,prob=p)
+print(paste0('6.1) prob = ', round(prob*100,4),'%'))
+	
+
+# What is the expected value?
+e <- pgeom(q=0.5, prob=p) 
+print(paste0('6.2) expected failures = 1'))
+
+
+```
+
+
+
+
+## 7. Surgical
+
+7. A surgical patient arrives for surgery precisely at a given time. Based on previous analysis (or a lack of knowledge assumption), you know that the waiting time is uniformly distributed from 0 to 30 minutes. What is the probability that this patient will wait more than 10 minutes? If the patient has already waited 10 minutes, what is the probability that he/she will wait at least another 5 minutes prior to being seen? What is the expected waiting time?
+
+Variable
+- wait time is distributed 0 to 30 min
+
+
+```{r}
+
+min <- 0
+max <- 30
+
+
+
+# What is the probability that this patient will wait more than 10 minutes? 
+x <- 10
+prob <- (1 - punif(x, min, max))
+print(paste0('7.1) prob = ', round(prob*100,2),'%'))
+
+
+# If the patient has already waited 10 minutes, what is the probability that he/she will wait at least another 5 minutes prior to being seen? 
+x <- 10
+prob1 <- (1 - punif(x, min, max))
+
+x <- 15
+prob2 <- punif(x, min, max)
+
+prob <- prob2 / prob1
+print(paste0('7.2) prob = ', round(prob*100,2),'%'))
+
+	
+# What is the expected waiting time?
+e <- 0.5 * (min + max)
+print(paste0('7.3) expected wait time = ', e))
+
+```
+
+
+
+## 8. MRI 
+
+8. Your hospital owns an old MRI, which has a manufacturer’s lifetime of about 10 years (expected value). Based on previous studies, we know that the failure of most MRIs obeys an exponential distribution. What is the expected failure time? What is the standard deviation? What is the probability that your MRI will fail after 8 years? Now assume that you have owned the machine for 8 years. Given that you already owned the machine 8 years, what is the probability that it will fail in the next two years?
+
+Variable
+- lifetime 10 years
+- exponential distribution
+
+```{r}
+
+l <- 1/10 
+
+
+# What is the expected failure time? 
+e <- 10
+print(paste0('8.1) expected failure time = ', e))
+
+
+# What is the standard deviation? 
+std <- 10
+print(paste0('8.1) standard deviation = ', std))
+
+	
+# What is the probability that your MRI will fail after 8 years? 
+prob <- 1 - pexp(8, l)
+print(paste0('8.3) prob = ', round(prob*100,2),'%'))
+
+
+# Now assume that you have owned the machine for 8 years. Given that you already owned the machine 8 years, what is the probability that it will fail in the next two years?
+prob <- pexp(10, l) - pexp(8, l)
+print(paste0('8.4) prob = ', round(prob*100,2),'%'))
+
+```
+
+
+<br><br>
+<b><i>Please show your work using an R-markdown document. Please name your assignment submission with your first initial and last name.</i></b>
+

@@ -1,0 +1,88 @@
+---
+title: "DATA605_w11_Regression Analysis"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+rm(list=ls())
+
+```
+
+
+```{r, include=FALSE}
+
+library(matlib) 
+library(pracma)
+library(stats)
+library(scales)
+library(expm)
+library(dplyr)
+library(explore)
+
+
+```
+
+
+
+# Question 1 
+Using the “cars” dataset in R, build a linear model for stopping distance as a function of speed and replicate the analysis of your textbook chapter 3 (visualization, quality evaluation of the model, and residual analysis.)
+
+
+
+```{r}
+data(cars)
+summary(cars)
+cars %>% explore(speed, target = dist, split = TRUE)
+cars %>% explain_tree(target = dist)
+
+```
+
+<b><i> 
+
+- There appears to be a positive correlation between speed and distance
+- The tree view highlights some clear breakpoints in speed that correspond to higher stopping distances
+
+</i></b>
+
+
+
+
+
+```{r}
+
+car_lm <- lm(formula = dist ~ speed, data=cars)
+s_lm <- summary(car_lm)
+s_lm
+
+```
+
+<b><i> 
+
+- The model explains `r s_lm$adj.r.squared` of the variability in stopping distance. 
+- With a p value of `r s_lm$coefficients[2,4]` we can reject the null hypothesis in favor of the alternate hypothesis
+
+</i></b>
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(car_lm)
+```
+<b><i> 
+
+- The right side of the Q-Q plot diverges from the guide line, indicating that the residuals are not normally distributed
+
+</i></b>
+
+
+<br><br>
+<b><i>Please show your work using an R-markdown document. Please name your assignment submission with your first initial and last name.</i></b>
+
