@@ -1,0 +1,505 @@
+---
+title: "DATA605_Final"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+rm(list=ls())
+
+```
+
+
+```{r, include=FALSE}
+
+library(matlib) 
+library(pracma)
+library(ggplot2)
+
+library(Matrix)
+library(igraph)
+library(openintro)
+library(expm) 
+library(matrixcalc)
+
+library(igraph)
+
+
+library(tidyverse)
+library(keras)
+library(yardstick)
+library(tidymodels)
+library(workflows)
+
+library(nnet)
+library(caret)
+
+
+library(corrplot)
+library(GGally)
+library(stats)
+library(MASS)
+
+
+library(textrecipes)
+library(recipes)
+library(modeldata)
+
+
+```
+
+
+
+
+
+
+# Problem 3: Advanced Regression Techniques
+
+Modeling. Build some type of multiple regression model and submit your model to the competition board. Provide your complete model summary and results with analysis. Report your Kaggle.com user name and score. 10 points
+
+
+
+
+
+
+## Load data
+
+```{r}
+
+# read in training data
+house_train_df <- read_csv("./Final/house-prices/train.csv")
+house_train_df %>% select_if(is.numeric) %>% summary()
+
+# reokace b/a with 0 where applicable
+house_train_df <- house_train_df %>% mutate(
+                    LotFrontage = ifelse(is.na(LotFrontage), 0, LotFrontage),
+                    MasVnrArea = ifelse(is.na(MasVnrArea), 0, MasVnrArea),
+                    GarageYrBlt = ifelse(is.na(MasVnrArea), mean(GarageYrBlt, na.rm = TRUE), MasVnrArea),
+                    FireplaceQu = ifelse(is.na(FireplaceQu), "None", FireplaceQu),
+                    BsmtFinSF1 = ifelse(is.na(BsmtFinSF1), 0, BsmtFinSF1),
+                    TotalBsmtSF = ifelse(is.na(TotalBsmtSF), 0, TotalBsmtSF),
+                    PoolQC = ifelse(is.na(PoolQC), "None", PoolQC),
+                    Street = ifelse(is.na(Street), "None", Street),
+                    Alley = ifelse(is.na(Alley), "None", Alley),
+                    GarageType = ifelse(is.na(GarageType), "None", GarageType),
+                    GarageFinish = ifelse(is.na(GarageFinish), "None", GarageFinish),
+                    GarageQual = ifelse(is.na(GarageQual), "None", GarageQual),
+                    GarageCond = ifelse(is.na(GarageCond), "None", GarageCond),
+                    BsmtQual = ifelse(is.na(BsmtQual), "None", BsmtQual),
+                    KitchenQual = ifelse(is.na(KitchenQual), "None", KitchenQual),
+                    GrLivArea = ifelse(is.na(GrLivArea), 0, GrLivArea)
+                  )
+
+#Print number of null
+print('---- nulls ----')
+all_nas <- colSums(sapply(house_train_df[names(house_train_df)], is.na))
+all_nas[which(all_nas > 0)]
+
+
+```
+
+
+
+## Baseline - Full Numeric Model
+This model will include all numeric fields as a baseline. 
+
+```{r}
+
+# moduel with numeric variables only
+houseNum_df <- house_train_df %>%  dplyr::select_if(is.numeric)
+ml.num <- lm(SalePrice ~., houseNum_df)
+
+
+# stepwize optimizaiton
+ml.num.step <- stats::step(ml.num, criteria='AIC', trace=FALSE,direction='both')
+summary(ml.num.step)
+
+
+# residuals
+par(mfrow=c(2,2))
+plot(ml.num.step)
+
+
+```
+
+lm(formula = SalePrice ~ MSSubClass + LotArea + OverallQual + 
+    OverallCond + YearBuilt + YearRemodAdd + MasVnrArea + BsmtFinSF1 + 
+    BsmtUnfSF + `1stFlrSF` + `2ndFlrSF` + LowQualFinSF + BsmtFullBath + 
+    FullBath + BedroomAbvGr + KitchenAbvGr + TotRmsAbvGrd + Fireplaces + 
+    GarageCars + WoodDeckSF + ScreenPorch, data = houseNum_df)
+    
+
+## Analysis - Candidate Variable
+
+```{r}
+
+candidates <- c('SalePrice','MSSubClass','LotArea','LotFrontage','OverallQual','YearBuilt','YearRemodAdd',
+				'BsmtFinSF1','BsmtUnfSF','TotalBsmtSF','1stFlrSF','2ndFlrSF','GrLivArea','BsmtFullBath',
+				'FullBath','BedroomAbvGr','KitchenAbvGr','TotRmsAbvGrd','Fireplaces','GarageCars','GarageArea',
+				'WoodDeckSF','OpenPorchSF','FireplaceQu','SaleCondition','OverallCond','CentralAir','PoolQC',
+				'ExterCond','MasVnrArea','TotalBsmtSF','ScreenPorch')
+
+full_df <- house_train_df %>%
+   dplyr::select(all_of(candidates)) %>%
+   mutate(ExterCond=as.numeric(as.factor(ExterCond)),
+			FullBath=as.numeric(as.factor(FullBath)),
+			FireplaceQu=as.numeric(as.factor(FireplaceQu)), 
+			SaleCondition=as.numeric(as.factor(SaleCondition)), 
+			GarageCars=as.numeric(as.factor(GarageCars)),
+			OverallCond=as.numeric(as.factor(OverallCond)), 
+			CentralAir=as.numeric(as.factor(CentralAir)),
+			PoolQC=as.numeric(as.factor(PoolQC))
+   )
+
+ames_corr <- full_df
+ames_correlations <- cor(ames_corr, method = c("pearson"))
+corrplot(ames_correlations, method="color")
+
+```
+
+
+```{r}
+
+t <- ames_correlations
+t[t < 0.3 ] <- 0
+corrplot(t, method="color")
+
+
+t <- as.data.frame(ames_correlations)
+t <- t[t$SalePrice > 0.3]
+t <- t %>% dplyr::filter(SalePrice > 0.3)
+
+
+candidates <- names(t)
+candidates
+
+ames_corr %>% 
+	dplyr::select(all_of(candidates)) %>% 
+	ggpairs()
+
+corrplot(as.matrix(t), method="color")
+
+
+```
+
+
+
+
+
+
+
+```{r}
+
+
+ggplot(house_train_df, aes(y=SalePrice, x=OverallQual)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=YearBuilt)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=YearRemodAdd)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=BsmtFinSF1)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=TotalBsmtSF)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=house_train_df$'1stFlrSF')) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=house_train_df$'2ndFlrSF')) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=GrLivArea)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=FullBath)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=TotRmsAbvGrd)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=Fireplaces)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=GarageCars)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=GarageArea)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=WoodDeckSF)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=OpenPorchSF)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=MasVnrArea)) + 
+	scale_y_continuous(labels = comma) + geom_point()
+
+
+
+```
+
+
+
+
+```{r}
+
+
+ggplot(house_train_df, aes(x=log(SalePrice))) + geom_histogram()
+ggplot(house_train_df, aes(x=YearBuilt-min(house_train_df$YearBuilt))) + geom_histogram()
+ggplot(house_train_df, aes(x=YearRemodAdd-min(house_train_df$YearRemodAdd))) + geom_histogram()
+ggplot(house_train_df, aes(x=log(TotalBsmtSF))) + geom_histogram()
+ggplot(house_train_df, aes(x=house_train_df$'1stFlrSF')) + geom_histogram()
+ggplot(house_train_df, aes(x=GrLivArea)) + geom_histogram()
+ggplot(house_train_df, aes(x=GarageArea)) + geom_histogram()
+
+
+```
+
+
+
+
+
+```{r}
+
+
+ggplot(house_train_df, aes(y=SalePrice, x=YearBuilt)) + 
+	scale_y_continuous(labels = comma) + geom_point() +
+	facet_wrap(vars(Neighborhood))
+
+ggplot(house_train_df, aes(y=SalePrice, x=YearBuilt)) + 
+	scale_x_log10() + geom_point()
+	
+ggplot(house_train_df, aes(y=SalePrice, x=TotalBsmtSF)) + 
+	scale_x_log10() + geom_point()
+
+ggplot(house_train_df, aes(y=SalePrice, x=TotalBsmtSF)) + 
+	scale_x_sqrt() + geom_point()
+
+
+```
+
+
+
+[1] "SalePrice"    "OverallQual"  "YearBuilt"    "YearRemodAdd" "BsmtFinSF1"   "TotalBsmtSF"  "1stFlrSF"     "2ndFlrSF"    
+ [9] "GrLivArea"    "FullBath"     "TotRmsAbvGrd" "Fireplaces"   "GarageCars"   "GarageArea"   "WoodDeckSF"   "OpenPorchSF" 
+[17] "MasVnrArea"  
+
+
+
+## Full Model
+
+```{r}
+
+
+candidates <- c('SalePrice','OverallQual','YearBuilt','YearRemodAdd','BsmtFinSF1','BsmtUnfSF',
+				'TotalBsmtSF',
+				'1stFlrSF','2ndFlrSF','GrLivArea','BsmtFullBath','FullBath','HalfBath','KitchenAbvGr',
+				'TotRmsAbvGrd','Fireplaces','GarageCars','GarageArea','WoodDeckSF','OpenPorchSF',
+				'FireplaceQu',
+				'SaleCondition','OverallCond','CentralAir','PoolQC','ExterCond','YearRemodAdd',
+				'MasVnrArea',
+				'MSSubClass','MSZoning','Street','Alley','LotShape','LandContour','LotConfig','HouseStyle',
+				'RoofStyle','RoofMatl','BsmtQual','BsmtCond','BsmtFinType1','KitchenQual','GarageType',
+				'GarageQual')
+
+
+full_df <- house_train_df %>%
+   dplyr::select(all_of(candidates)) %>%
+   mutate(ExterCond=(as.factor(ExterCond)),
+			MSSubClass=(as.factor(MSSubClass)),
+			MSZoning=(as.factor(MSZoning)),
+			Street=(as.factor(Street)),
+			Alley=(as.factor(Alley)),
+			LotShape=(as.factor(LotShape)),
+			LandContour=(as.factor(LandContour)),
+			LotConfig=(as.factor(LotConfig)),
+			HouseStyle=(as.factor(HouseStyle)),
+			RoofStyle=(as.factor(RoofStyle)),
+			RoofMatl=(as.factor(RoofMatl)),
+			BsmtQual=(as.factor(BsmtQual)),
+			BsmtCond=(as.factor(BsmtCond)),
+			BsmtFinType1=(as.factor(BsmtFinType1)),
+			KitchenQual=(as.factor(KitchenQual)),
+			FireplaceQu=(as.factor(FireplaceQu)), 
+			GarageType=(as.factor(GarageType)), 
+			GarageQual=(as.factor(GarageQual)), 
+			SaleCondition=(as.factor(SaleCondition)), 
+			OverallCond=c(as.factor(OverallCond)), 
+			CentralAir=(as.factor(CentralAir)),
+			PoolQC=(as.factor(PoolQC))
+   )
+
+
+#full_df <- ames_corr 
+ml.full <- lm(formula = SalePrice ~ ., data = full_df)
+
+
+# stepwize optimizaiton
+ml.full.step <- stats::step(ml.full, criteria='AIC', trace=FALSE,direction='both')
+summary(ml.full.step)
+
+
+# residuals
+par(mfrow=c(2,2))
+plot(ml.full.step)
+
+```
+
+
+
+
+## Model 1
+
+Removed
+- GarageCars
+- WoodDeckSF
+- GarageArea
+- OverallCond
+- MSSubClass
+- MSZoning
+- BsmtFinType1
+- LotConfig
+
+
+```{r}
+
+
+candidates <- c('SalePrice','OverallQual','YearBuilt','BsmtUnfSF','TotalBsmtSF',
+				'1stFlrSF','2ndFlrSF','KitchenAbvGr', 'TotRmsAbvGrd','Fireplaces',
+				'SaleCondition',
+				'PoolQC', 'MasVnrArea','LotShape', 'LandContour',
+				'RoofMatl', 'BsmtQual','KitchenQual')
+
+df1 <- full_df %>% dplyr::select(all_of(candidates))
+
+
+# model v1
+ml.v1 <- lm(formula = SalePrice ~ ., data = df1)
+
+
+# stepwize optimization
+ml.v1.step <- stats::step(ml.v1, criteria='AIC', trace=FALSE,direction='both')
+summary(ml.v1.step)
+
+
+# residuals
+par(mfrow=c(2,2))
+plot(ml.v1.step)
+
+
+```
+
+
+
+
+## Predict
+Selected model 2 for the predictions
+
+
+```{r}
+
+house_test_df <- read_csv("./Final/house-prices/test.csv")
+
+
+# reokace b/a with 0 where applicable
+house_test_df <- house_test_df %>% mutate(
+                    LotFrontage = ifelse(is.na(LotFrontage), 0, LotFrontage),
+                    MasVnrArea = ifelse(is.na(MasVnrArea), 0, MasVnrArea),
+                    GarageYrBlt = ifelse(is.na(MasVnrArea), mean(GarageYrBlt, na.rm = TRUE), MasVnrArea),
+                    FireplaceQu = ifelse(is.na(FireplaceQu), "None", FireplaceQu),
+                    BsmtFinSF1 = ifelse(is.na(BsmtFinSF1), 0, BsmtFinSF1),
+                    TotalBsmtSF = ifelse(is.na(TotalBsmtSF), 0, TotalBsmtSF),
+                    PoolQC = ifelse(is.na(PoolQC), "None", PoolQC),
+                    Street = ifelse(is.na(Street), "None", Street),
+                    Alley = ifelse(is.na(Alley), "None", Alley),
+                    GarageType = ifelse(is.na(GarageType), "None", GarageType),
+                    GarageFinish = ifelse(is.na(GarageFinish), "None", GarageFinish),
+                    GarageQual = ifelse(is.na(GarageQual), "None", GarageQual),
+                    GarageCond = ifelse(is.na(GarageCond), "None", GarageCond),
+                    BsmtQual = ifelse(is.na(BsmtQual), "None", BsmtQual),
+                    KitchenQual = ifelse(is.na(KitchenQual), "Gd", KitchenQual),
+                    GrLivArea = ifelse(is.na(GrLivArea), 0, GrLivArea),
+                    BsmtUnfSF = ifelse(is.na(BsmtUnfSF), 0, BsmtUnfSF)
+                  )
+
+
+
+# identify variables with null values
+all_nas <- colSums(sapply(house_test_df[names(house_test_df)], is.na))
+all_nas[which(all_nas > 0)]
+
+
+
+
+house_test_df <- house_test_df %>%
+   mutate(ExterCond=(as.factor(ExterCond)),
+			MSSubClass=(as.factor(MSSubClass)),
+			MSZoning=(as.factor(MSZoning)),
+			Street=(as.factor(Street)),
+			Alley=(as.factor(Alley)),
+			LotShape=(as.factor(LotShape)),
+			LandContour=(as.factor(LandContour)),
+			LotConfig=(as.factor(LotConfig)),
+			HouseStyle=(as.factor(HouseStyle)),
+			RoofStyle=(as.factor(RoofStyle)),
+			RoofMatl=(as.factor(RoofMatl)),
+			BsmtQual=(as.factor(BsmtQual)),
+			BsmtCond=(as.factor(BsmtCond)),
+			BsmtFinType1=(as.factor(BsmtFinType1)),
+			KitchenQual=(as.factor(KitchenQual)),
+			FireplaceQu=(as.factor(FireplaceQu)), 
+			GarageType=(as.factor(GarageType)), 
+			GarageQual=(as.factor(GarageQual)), 
+			SaleCondition=(as.factor(SaleCondition)), 
+			OverallCond=c(as.factor(OverallCond)), 
+			CentralAir=(as.factor(CentralAir)),
+			PoolQC=(as.factor(PoolQC))
+   )
+
+
+# predict new values
+house_test_df$SalePrice <- predict.lm(ml.v1.step, house_test_df, type = "response")
+
+
+# plot housing prices vs neighborhood
+ggplot(house_test_df, aes(x=SalePrice, fill=Neighborhood)) + geom_histogram()
+
+```
+
+
+
+
+```{r}
+
+# create results dataframe
+result_df <- house_test_df %>% dplyr::select(Id,SalePrice)
+
+# identify na predictions
+all_nas <- colSums(sapply(result_df[names(result_df)], is.na))
+all_nas[which(all_nas > 0)]
+
+# write results
+write.csv(result_df,"./Final/house-prices/result.csv", row.names = FALSE)
+
+
+```
+
+
+
+
+
+
+
